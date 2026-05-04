@@ -97,7 +97,7 @@ public class Lobby {
     }
 
     public void removePlayer(Player player) {
-        this.players.remove(player);
         player.setLobby(null);
+        this.players.remove(player);
     }
 }

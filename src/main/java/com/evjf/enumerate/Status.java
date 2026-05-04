@@ -4,7 +4,7 @@ public enum Status {
 
     WAITING,
     SETUP,
-    LAUNCHED,
+    PLAYING,
     FINISHED;
 
 }
