@@ -27,19 +27,19 @@ public class Lobby {
     private Integer id;
 
     @Enumerated(EnumType.STRING)
-    private Status status;
+    private Status status = Status.WAITING;
 
     @OneToMany(mappedBy = "lobby", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Player> players = new ArrayList<>();
+    private final List<Player> players = new ArrayList<>();
 
     @OneToOne
     @JoinColumn(name = "game_id")
-    private Game game;
+    private Game game = null;
+
+    private Integer currentRound = 0;
 
     @Column(unique = true, nullable = false)
     private String code;
-
-    private Integer currentRound = 0;
 
     // CONSTRUCTORS
 
