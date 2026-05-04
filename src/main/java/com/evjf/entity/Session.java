@@ -5,7 +5,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Table;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Entity;
-import org.springframework.data.annotation.Id;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToOne;
 
 @Entity
 @Table(name = "session")
@@ -18,9 +19,11 @@ public class Session {
 
     public Integer currentRound;
 
-    @JoinColumn(name = "loby_id")
-    public Loby loby;
+    @OneToOne
+    @JoinColumn(name = "lobby_id")
+    public Lobby lobby;
 
+    @OneToOne
     @JoinColumn(name = "game_id")
     public Game game;
 
@@ -47,12 +50,12 @@ public class Session {
         this.currentRound = currentRound;
     }
 
-    public Loby getLoby() {
-        return loby;
+    public Lobby getLoby() {
+        return lobby;
     }
 
-    public void setLoby(Loby loby) {
-        this.loby = loby;
+    public void setLoby(Lobby loby) {
+        this.lobby = loby;
     }
 
     public Game getGame() {

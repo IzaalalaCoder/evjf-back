@@ -1,6 +1,6 @@
 package com.evjf.enumerate;
 
-public enum Rule {
+public enum Role {
     FUTURE_BRIDE,
     GUESTS
 }

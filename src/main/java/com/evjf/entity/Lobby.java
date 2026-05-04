@@ -8,12 +8,12 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
-import org.springframework.data.annotation.Id;
+import jakarta.persistence.Id;
 import java.util.List;
 
 @Entity
-@Table(name = "loby")
-public class Loby {
+@Table(name = "lobby")
+public class Lobby {
 
     // ATTRIBUTES
 
@@ -24,12 +24,12 @@ public class Loby {
     @Enumerated(EnumType.STRING)
     public Status status;
 
-    @OneToMany
+    @OneToMany(mappedBy = "lobby")
     public List<Player> players;
 
     // CONSTRUCTORS
 
-    public Loby() {}
+    public Lobby() {}
 
     // METHODS
 

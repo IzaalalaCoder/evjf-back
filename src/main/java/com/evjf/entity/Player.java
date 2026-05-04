@@ -1,6 +1,6 @@
 package com.evjf.entity;
 
-import com.evjf.enumerate.Rule;
+import com.evjf.enumerate.Role;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.EnumType;
@@ -9,7 +9,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
-import org.springframework.data.annotation.Id;
+import jakarta.persistence.Id;
 
 
 @Entity
@@ -26,11 +26,11 @@ public class Player {
     public String link;
 
     @Enumerated(EnumType.STRING)
-    public Rule rule;
+    public Role role;
 
     @ManyToOne
-    @JoinColumn(name = "loby_id")
-    public Loby loby;
+    @JoinColumn(name = "lobby_id")
+    public Lobby lobby;
 
     // CONSTRUCTORS
 
@@ -42,8 +42,8 @@ public class Player {
         return id;
     }
 
-    public Rule getRule() {
-        return rule;
+    public Role getRole() {
+        return role;
     }
 
     public String getLink() {
@@ -62,8 +62,8 @@ public class Player {
         this.pseudo = pseudo;
     }
 
-    public void setRule(Rule rule) {
-        this.rule = rule;
+    public void setRole(Role role) {
+        this.role = role;
     }
 
     public void setId(Integer id) {
