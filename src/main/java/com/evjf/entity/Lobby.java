@@ -6,8 +6,6 @@ import jakarta.persistence.Table;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Id;
@@ -22,11 +20,8 @@ public class Lobby {
 
     // ATTRIBUTES
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
-
     @Enumerated(EnumType.STRING)
+    @Column(name = "status", columnDefinition = "VARCHAR(50)")
     private Status status = Status.WAITING;
 
     @OneToMany(mappedBy = "lobby", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -38,6 +33,7 @@ public class Lobby {
 
     private Integer currentRound = 0;
 
+    @Id
     @Column(unique = true, nullable = false)
     private String code;
 
@@ -71,16 +67,8 @@ public class Lobby {
         this.currentRound = currentRound;
     }
 
-    public Integer getId() {
-        return id;
-    }
-
     public Status getStatus() {
         return status;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
     }
 
     public void setStatus(Status status) {

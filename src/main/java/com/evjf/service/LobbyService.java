@@ -6,6 +6,7 @@ import com.evjf.dto.GetPlayerDTO;
 import com.evjf.entity.Game;
 import com.evjf.entity.Lobby;
 import com.evjf.entity.Player;
+import com.evjf.enumerate.Role;
 import com.evjf.enumerate.Status;
 import com.evjf.repository.GameRepository;
 import com.evjf.repository.LobbyRepository;
@@ -44,17 +45,19 @@ public class LobbyService {
         lobbyRepository.save(lobby);
     }
 
-    public void launchSession(Integer id) {
-        Lobby lobby = this.lobbyRepository.findById(id).orElse(null);
-        if (lobby != null && lobby.getStatus() == Status.WAITING) {
-            lobby.setStatus(Status.SETUP);
-            this.lobbyRepository.save(lobby);
+    public void launchSession(String code) {
+        Lobby lobby = this.lobbyRepository.findById(code).orElse(null);
+        if (lobby != null && lobby.getStatus() == Status.WAITING && lobby.getPlayers().size() > 1) {
+            if (lobby.getPlayers().stream().filter(e -> e.getRole() == Role.FUTURE_BRIDE).toList().size() == 1) {
+                lobby.setStatus(Status.SETUP);
+                this.lobbyRepository.save(lobby);
+            }
         }
     }
 
-    public void launchGame(Integer lobbyId, Integer gameId) {
+    public void launchGame(String code, Integer gameId) {
          Game game = this.gameRepository.findById(gameId).orElse(null);
-         Lobby lobby = this.lobbyRepository.findById(lobbyId).orElse(null);
+         Lobby lobby = this.lobbyRepository.findById(code).orElse(null);
          if (lobby != null && game != null && lobby.getStatus() == Status.SETUP) {
              lobby.setStatus(Status.PLAYING);
              lobby.setGame(game);
@@ -63,8 +66,8 @@ public class LobbyService {
          }
     }
 
-    public void increaseRound(Integer lobbyId) {
-        Lobby lobby = this.lobbyRepository.findById(lobbyId).orElse(null);
+    public void increaseRound(String code) {
+        Lobby lobby = this.lobbyRepository.findById(code).orElse(null);
         if (lobby != null && lobby.getStatus() == Status.PLAYING) {
             if (lobby.getCurrentRound() < lobby.getGame().getNumberRound()) {
                 lobby.setCurrentRound(lobby.getCurrentRound() + 1);
@@ -75,37 +78,43 @@ public class LobbyService {
         }
     }
 
-    public void endGame(Integer lobbyId) {
-        Lobby lobby = this.lobbyRepository.findById(lobbyId).orElse(null);
+    public void endGame(String code) {
+        Lobby lobby = this.lobbyRepository.findById(code).orElse(null);
         if (lobby != null && lobby.getStatus() == Status.PLAYING) {
             lobby.setStatus(Status.SETUP);
+            lobby.setGame(null);
+            lobby.setCurrentRound(0);
             this.lobbyRepository.save(lobby);
         }
     }
 
-    public void closeSession(Integer lobbyId) {
-        Lobby lobby = this.lobbyRepository.findById(lobbyId).orElse(null);
+    public void closeSession(String code) {
+        Lobby lobby = this.lobbyRepository.findById(code).orElse(null);
         if (lobby != null && lobby.getStatus() != Status.WAITING) {
             lobby.setStatus(Status.FINISHED);
+            lobby.setGame(null);
+            lobby.setCurrentRound(0);
             this.lobbyRepository.save(lobby);
         }
     }
 
     public void addPlayerToLobby(CreatePlayerDTO createPlayerDTO) {
-        Lobby lobby = this.lobbyRepository.findByCode(createPlayerDTO.lobbyCode()).orElse(null);
+        Lobby lobby = this.lobbyRepository.findById(createPlayerDTO.lobbyCode()).orElse(null);
         if (lobby != null && lobby.getStatus() == Status.WAITING) {
-            Player player = new Player();
-            player.setLobby(lobby);
-            player.setDeviceId(createPlayerDTO.deviceId());
-            player.setPseudo(createPlayerDTO.pseudo());
-            player.setRole(createPlayerDTO.role());
-            lobby.addPlayer(player);
-            this.lobbyRepository.save(lobby);
+            if (!playerRepository.existsByPseudoAndLobbyCode(createPlayerDTO.pseudo(), createPlayerDTO.lobbyCode())) {
+                Player player = new Player();
+                player.setLobby(lobby);
+                player.setDeviceId(createPlayerDTO.deviceId());
+                player.setPseudo(createPlayerDTO.pseudo());
+                player.setRole(createPlayerDTO.role());
+                lobby.addPlayer(player);
+                this.lobbyRepository.save(lobby);
+            }
         }
     }
 
-    public void removePlayerFromLobby(Integer lobbyId, Integer playerId) {
-        Lobby lobby = lobbyRepository.findById(lobbyId).orElse(null);
+    public void removePlayerFromLobby(String code, Integer playerId) {
+        Lobby lobby = lobbyRepository.findById(code).orElse(null);
         Player player = this.playerRepository.findById(playerId).orElse(null);
         if (lobby != null && player != null && lobby.getStatus() == Status.WAITING) {
             lobby.removePlayer(player);
@@ -113,17 +122,12 @@ public class LobbyService {
         }
     }
 
-    public void deleteLobby(Integer lobbyId) {
-        lobbyRepository.deleteById(lobbyId);
+    public void deleteLobby(String code) {
+        lobbyRepository.deleteById(code);
     }
 
     public GetLobbyDTO getLobbyByCode(String code) {
-        Lobby lobby = this.lobbyRepository.findByCode(code).orElse(null);
-        return toDTOObject(lobby);
-    }
-
-    public GetLobbyDTO getLobbyById(Integer id) {
-        Lobby lobby = this.lobbyRepository.findById(id).orElse(null);
+        Lobby lobby = this.lobbyRepository.findById(code).orElse(null);
         return toDTOObject(lobby);
     }
 
@@ -143,7 +147,7 @@ public class LobbyService {
         String code;
         do {
             code = generateCode();
-        } while (lobbyRepository.existsByCode(code));
+        } while (lobbyRepository.existsById(code));
         return code;
     }
 
@@ -151,8 +155,8 @@ public class LobbyService {
         if (lobby == null) {
             return null;
         }
-        return new GetLobbyDTO(lobby.getId(),
-                lobby.getStatus(), lobby.getPlayers().stream().map(this::toDTOObject).toList(), lobby.getCode());
+        return new GetLobbyDTO(lobby.getCode(),
+                lobby.getStatus(), lobby.getPlayers().stream().map(this::toDTOObject).toList());
     }
 
     private GetPlayerDTO toDTOObject(Player player) {
