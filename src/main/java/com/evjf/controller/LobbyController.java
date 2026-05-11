@@ -3,6 +3,7 @@ package com.evjf.controller;
 import com.evjf.dto.CreatePlayerDTO;
 import com.evjf.dto.GetLobbyDTO;
 import com.evjf.service.LobbyService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -23,8 +24,9 @@ public class LobbyController {
     // METHODS
 
     @PostMapping
-    public void createLobby() {
+    public ResponseEntity<Void> createLobby() {
         this.lobbyService.createLobby();
+        return ResponseEntity.status(201).build();
     }
 
     @PutMapping(path = "{code}/launch")
@@ -63,9 +65,8 @@ public class LobbyController {
     }
 
     @GetMapping(path = "{code}")
-    public GetLobbyDTO getLobbyByCode(@PathVariable String code) {
-        return this.lobbyService.getLobbyByCode(code);
+    public ResponseEntity<GetLobbyDTO> getLobbyByCode(@PathVariable String code) {
+        GetLobbyDTO lobbyDTO = this.lobbyService.getLobbyByCode(code);
+        return ResponseEntity.ok(lobbyDTO);
     }
-
-
 }

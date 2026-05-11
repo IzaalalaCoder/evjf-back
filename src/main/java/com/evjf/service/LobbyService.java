@@ -11,6 +11,7 @@ import com.evjf.enumerate.Status;
 import com.evjf.repository.GameRepository;
 import com.evjf.repository.LobbyRepository;
 import com.evjf.repository.PlayerRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import java.security.SecureRandom;
 
@@ -126,6 +127,7 @@ public class LobbyService {
         lobbyRepository.deleteById(code);
     }
 
+    @Transactional
     public GetLobbyDTO getLobbyByCode(String code) {
         Lobby lobby = this.lobbyRepository.findById(code).orElse(null);
         return toDTOObject(lobby);
