@@ -17,14 +17,14 @@ public class Game {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    public Integer id;
+    private Integer id;
 
-    public String name;
-    public String description;
-    public Integer numberRound;
+    private String name;
+    private String description;
+    private Integer numberRound;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "game")
-    public List<Card> cards;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "game", orphanRemoval = true)
+    private List<Card> cards;
 
     // CONSTRUCTORS
 

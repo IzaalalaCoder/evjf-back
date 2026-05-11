@@ -11,7 +11,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 
-
 @Entity
 @Table(name = "player")
 public class Player {
@@ -20,17 +19,17 @@ public class Player {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    public Integer id;
+    private Integer id;
 
-    public String pseudo;
-    public String link;
+    private String pseudo;
+    private String deviceId;
 
     @Enumerated(EnumType.STRING)
-    public Role role;
+    private Role role;
 
     @ManyToOne
     @JoinColumn(name = "lobby_id")
-    public Lobby lobby;
+    private Lobby lobby;
 
     // CONSTRUCTORS
 
@@ -46,16 +45,16 @@ public class Player {
         return role;
     }
 
-    public String getLink() {
-        return link;
+    public String getDeviceId() {
+        return deviceId;
     }
 
     public String getPseudo() {
         return pseudo;
     }
 
-    public void setLink(String link) {
-        this.link = link;
+    public void setDeviceId(String deviceId) {
+        this.deviceId = deviceId;
     }
 
     public void setPseudo(String pseudo) {
@@ -68,5 +67,13 @@ public class Player {
 
     public void setId(Integer id) {
         this.id = id;
+    }
+
+    public Lobby getLobby() {
+        return lobby;
+    }
+
+    public void setLobby(Lobby lobby) {
+        this.lobby = lobby;
     }
 }

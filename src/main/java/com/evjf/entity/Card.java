@@ -19,17 +19,17 @@ public class Card {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    public Integer id;
+    private Integer id;
 
-    public String question;
-    public Integer points;
+    private String question;
+    private Integer points;
 
     @Enumerated(EnumType.STRING)
-    public Level level;
+    private Level level;
 
     @ManyToOne
     @JoinColumn(name = "game_id")
-    public Game game;
+    private Game game;
 
     // CONSTRUCTORS
 
