@@ -72,8 +72,4 @@ public class Card {
     public void setQuestion(String question) {
         this.question = question;
     }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
 }

@@ -67,6 +67,7 @@ public class LobbyController {
     @GetMapping(path = "{code}")
     public ResponseEntity<GetLobbyDTO> getLobbyByCode(@PathVariable String code) {
         GetLobbyDTO lobbyDTO = this.lobbyService.getLobbyByCode(code);
+        if (lobbyDTO == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(lobbyDTO);
     }
 }

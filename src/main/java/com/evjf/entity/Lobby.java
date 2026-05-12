@@ -1,16 +1,8 @@
 package com.evjf.entity;
 
 import com.evjf.enumerate.Status;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Id;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
+import jakarta.persistence.*;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,10 +20,8 @@ public class Lobby {
     private final List<Player> players = new ArrayList<>();
 
     @OneToOne
-    @JoinColumn(name = "game_id")
-    private Game game = null;
-
-    private Integer currentRound = 0;
+    @JoinColumn(name = "play_id")
+    private Play currentPlay;
 
     @Id
     @Column(unique = true, nullable = false)
@@ -41,30 +31,22 @@ public class Lobby {
 
     public Lobby() {}
 
-    // METHODS
-
-    public void setCode(String code) {
+    public Lobby(String code) {
         this.code = code;
     }
+
+    // METHODS
 
     public String getCode() {
         return code;
     }
 
-    public Game getGame() {
-        return game;
+    public Play getCurrentPlay() {
+        return currentPlay;
     }
 
-    public void setGame(Game game) {
-        this.game = game;
-    }
-
-    public Integer getCurrentRound() {
-        return currentRound;
-    }
-
-    public void setCurrentRound(Integer currentRound) {
-        this.currentRound = currentRound;
+    public void setCurrentPlay(Play play) {
+        this.currentPlay = play;
     }
 
     public Status getStatus() {

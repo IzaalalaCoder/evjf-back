@@ -8,6 +8,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -24,7 +25,7 @@ public class Game {
     private Integer numberRound;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "game", orphanRemoval = true)
-    private List<Card> cards;
+    private List<Card> cards = new ArrayList<>();
 
     // CONSTRUCTORS
 
@@ -58,10 +59,6 @@ public class Game {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
     }
 
     public List<Card> getCards() {

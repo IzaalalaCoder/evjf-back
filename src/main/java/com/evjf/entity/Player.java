@@ -28,7 +28,7 @@ public class Player {
     private Role role;
 
     @ManyToOne
-    @JoinColumn(name = "lobby_id")
+    @JoinColumn(name = "lobby_code")
     private Lobby lobby;
 
     // CONSTRUCTORS
@@ -63,10 +63,6 @@ public class Player {
 
     public void setRole(Role role) {
         this.role = role;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
     }
 
     public Lobby getLobby() {
