@@ -21,8 +21,12 @@ public class Game {
     private Integer id;
 
     private String name;
+
     private String description;
+
     private Integer numberRound;
+
+    private Integer numberQuestionsByRound;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "game", orphanRemoval = true)
     private List<Card> cards = new ArrayList<>();
@@ -32,6 +36,14 @@ public class Game {
     public Game() {}
 
     // METHODS
+
+    public Integer getNumberQuestionsByRound() {
+        return numberQuestionsByRound;
+    }
+
+    public void setNumberQuestionsByRound(Integer numberQuestionsByRound) {
+        this.numberQuestionsByRound = numberQuestionsByRound;
+    }
 
     public Integer getId() {
         return id;

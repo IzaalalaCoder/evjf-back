@@ -1,20 +1,9 @@
 package com.evjf.entity;
 
 import com.evjf.enumerate.PlayStatus;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Column;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
-import java.util.List;
+import jakarta.persistence.*;
 import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "play")
@@ -34,6 +23,10 @@ public class Play {
     @JoinColumn(name = "current_card_id")
     private Card currentCard;
 
+    @ManyToOne
+    @JoinColumn(name = "current_player_id")
+    private Player currentPlayer;
+
     private Integer currentRound = 0;
 
     @Enumerated(EnumType.STRING)
@@ -46,56 +39,34 @@ public class Play {
             joinColumns = @JoinColumn(name = "play_id"),
             inverseJoinColumns = @JoinColumn(name = "card_id")
     )
-    private final List<Card> playedCards = new ArrayList<>();
+    private List<Card> playedCards = new ArrayList<>();
+
+    // CONSTRUCTORS
+
+    public Play() {}
 
     // METHODS
 
-
-    public List<Card> getPlayedCards() {
-        return playedCards;
-    }
-
     public void addPlayedCard(Card card) {
-        playedCards.add(card);
+        this.playedCards.add(card);
     }
 
-    public void clearPlayedCards() {
-        playedCards.clear();
-    }
+    public Integer getId() { return id; }
 
-    public PlayStatus getStatus() {
-        return status;
-    }
+    public Game getGame() { return game; }
+    public void setGame(Game game) { this.game = game; }
 
-    public void setStatus(PlayStatus status) {
-        this.status = status;
-    }
+    public Card getCurrentCard() { return currentCard; }
+    public void setCurrentCard(Card currentCard) { this.currentCard = currentCard; }
 
-    public Integer getId() {
-        return id;
-    }
+    public Player getCurrentPlayer() { return currentPlayer; }
+    public void setCurrentPlayer(Player currentPlayer) { this.currentPlayer = currentPlayer; }
 
-    public Card getCurrentCard() {
-        return currentCard;
-    }
-    public void setCurrentCard(Card currentCard) {
-        this.currentCard = currentCard;
-    }
+    public Integer getCurrentRound() { return currentRound; }
+    public void setCurrentRound(Integer currentRound) { this.currentRound = currentRound; }
 
-    public Game getGame() {
-        return game;
-    }
+    public PlayStatus getStatus() { return status; }
+    public void setStatus(PlayStatus status) { this.status = status; }
 
-    public void setGame(Game game) {
-        this.game = game;
-    }
-
-    public Integer getCurrentRound() {
-        return currentRound;
-    }
-
-    public void setCurrentRound(Integer currentRound) {
-        this.currentRound = currentRound;
-    }
-
+    public List<Card> getPlayedCards() { return playedCards; }
 }

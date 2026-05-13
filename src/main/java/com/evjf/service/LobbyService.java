@@ -1,20 +1,17 @@
 package com.evjf.service;
 
 import com.evjf.dto.*;
-import com.evjf.entity.Game;
-import com.evjf.entity.Lobby;
-import com.evjf.entity.Play;
-import com.evjf.entity.Player;
+import com.evjf.entity.*;
 import com.evjf.enumerate.PlayStatus;
 import com.evjf.enumerate.Role;
 import com.evjf.enumerate.Status;
-import com.evjf.repository.GameRepository;
-import com.evjf.repository.LobbyRepository;
-import com.evjf.repository.PlayRepository;
-import com.evjf.repository.PlayerRepository;
+import com.evjf.repository.*;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
+
 import java.security.SecureRandom;
+import java.util.List;
+import java.util.Objects;
 
 @Service
 public class LobbyService {
@@ -52,11 +49,12 @@ public class LobbyService {
     @Transactional
     public void launchSession(String code) {
         Lobby lobby = this.lobbyRepository.findById(code).orElse(null);
-        if (lobby != null && lobby.getStatus() == Status.WAITING && lobby.getPlayers().size() > 1) {
-            if (lobby.getPlayers().stream().filter(e -> e.getRole() == Role.FUTURE_BRIDE).toList().size() == 1) {
-                lobby.setStatus(Status.SETUP);
-                this.lobbyRepository.save(lobby);
-            }
+        if (lobby != null
+                && lobby.getStatus() == Status.WAITING
+                && lobby.getPlayers().size() > 1
+                && lobby.getPlayers().stream().filter(e -> e.getRole() == Role.FUTURE_BRIDE).toList().size() == 1) {
+            lobby.setStatus(Status.SETUP);
+            this.lobbyRepository.save(lobby);
         }
     }
 
@@ -64,16 +62,16 @@ public class LobbyService {
     public void launchGame(String code, Integer gameId) {
         Game game = this.gameRepository.findById(gameId).orElse(null);
         Lobby lobby = this.lobbyRepository.findById(code).orElse(null);
-        if (lobby != null && game != null && lobby.getStatus() == Status.SETUP) {
+        if (lobby != null && game != null && lobby.getStatus() == Status.SETUP && !game.getCards().isEmpty()) {
             Play play = new Play();
             play.setGame(game);
             play.setCurrentRound(0);
             play.setStatus(PlayStatus.IN_PROGRESS);
+            play.setCurrentPlayer(lobby.getPlayers().getFirst());
             // Première carte
-            if (!game.getCards().isEmpty()) {
-                play.setCurrentCard(game.getCards().getFirst());
-                play.getPlayedCards().add(game.getCards().getFirst());
-            }
+            Card firstCard = game.getCards().getFirst();
+            play.setCurrentCard(firstCard);
+            play.addPlayedCard(firstCard);
             playRepository.save(play);
             lobby.setCurrentPlay(play);
             lobby.setStatus(Status.PLAYING);
@@ -82,28 +80,55 @@ public class LobbyService {
     }
 
     @Transactional
-    public void increaseRound(String code) {
+    public void play(String code, Boolean done) {
         Lobby lobby = this.lobbyRepository.findById(code).orElse(null);
-        if (lobby != null && lobby.getStatus() == Status.PLAYING && lobby.getCurrentPlay() != null) {
-            Play play = lobby.getCurrentPlay();
-            if (play.getCurrentRound() < play.getGame().getNumberRound()) {
-                play.setCurrentRound(play.getCurrentRound() + 1);
-                // Prochaine carte non jouée
-                play.getGame().getCards().stream()
-                        .filter(c -> !play.getPlayedCards().contains(c))
-                        .findFirst()
-                        .ifPresent(nextCard -> {
-                            play.setCurrentCard(nextCard);
-                            play.getPlayedCards().add(nextCard);
-                        });
-            } else {
-                play.setStatus(PlayStatus.FINISHED);
-                lobby.setStatus(Status.SETUP);
-                lobby.setCurrentPlay(null);
-            }
-            playRepository.save(play);
-            this.lobbyRepository.save(lobby);
+        if (lobby == null
+                || lobby.getStatus() != Status.PLAYING
+                || lobby.getCurrentPlay() == null) return;
+
+        Play play = lobby.getCurrentPlay();
+
+        // 1. Ajouter les points si la carte a été réussie
+        if (Boolean.TRUE.equals(done) && play.getCurrentCard() != null) {
+            play.getCurrentPlayer().addPoints(play.getCurrentCard().getPoints());
+            playerRepository.save(play.getCurrentPlayer());
         }
+
+        // 2. Calculer le nombre de questions jouées dans le round courant
+        //    (currentCard est déjà dans playedCards depuis launchGame/play précédent)
+        int questionsInCurrentRound = play.getPlayedCards().size()
+                - (play.getCurrentRound() * play.getGame().getNumberQuestionsByRound());
+
+        boolean roundComplete = questionsInCurrentRound == play.getGame().getNumberQuestionsByRound();
+
+        if (roundComplete) {
+            // Round terminé
+            if (Objects.equals(play.getCurrentRound(), play.getGame().getNumberRound())) {
+                // Plus de rounds → fin du jeu automatique
+                play.setStatus(PlayStatus.FINISHED);
+                lobby.setCurrentPlay(null);
+                lobby.setStatus(Status.SETUP);
+                playRepository.save(play);
+                lobbyRepository.save(lobby);
+                return;
+            } else {
+                // Passer au round suivant
+                play.setCurrentRound(play.getCurrentRound() + 1);
+                findAndSetNextCard(play);
+            }
+        } else {
+            // Encore des questions dans ce round → carte suivante
+            findAndSetNextCard(play);
+        }
+
+        // 3. Passer au joueur suivant
+        List<Player> players = lobby.getPlayers();
+        int index = players.indexOf(play.getCurrentPlayer());
+        index = index < players.size() - 1 ? index + 1 : 0;
+        play.setCurrentPlayer(players.get(index));
+
+        playRepository.save(play);
+        lobbyRepository.save(lobby);
     }
 
     @Transactional
@@ -122,7 +147,9 @@ public class LobbyService {
     @Transactional
     public void closeSession(String code) {
         Lobby lobby = this.lobbyRepository.findById(code).orElse(null);
-        if (lobby != null && lobby.getStatus() != Status.WAITING) {
+        if (lobby != null
+                && lobby.getStatus() != Status.WAITING
+                && lobby.getStatus() != Status.FINISHED) {
             if (lobby.getCurrentPlay() != null) {
                 Play play = lobby.getCurrentPlay();
                 play.setStatus(PlayStatus.FINISHED);
@@ -172,6 +199,19 @@ public class LobbyService {
 
     // UTILS
 
+    private void findAndSetNextCard(Play play) {
+        play.getGame().getCards().stream()
+                .filter(c -> !play.getPlayedCards().contains(c))
+                .findFirst()
+                .ifPresentOrElse(
+                        nextCard -> {
+                            play.setCurrentCard(nextCard);
+                            play.addPlayedCard(nextCard);
+                        },
+                        () -> play.setCurrentCard(null)
+                );
+    }
+
     private String generateCode() {
         SecureRandom random = new SecureRandom();
         int lengthCodeMax = 6;
@@ -190,34 +230,55 @@ public class LobbyService {
         return code;
     }
 
-    private  GetLobbyDTO toDTOObject(Lobby lobby) {
-        if (lobby == null) {
-            return null;
-        }
+    private GetLobbyDTO toDTOObject(Lobby lobby) {
+        if (lobby == null) return null;
+
         GetPlayDTO playDTO = null;
         if (lobby.getCurrentPlay() != null) {
             Play play = lobby.getCurrentPlay();
+
+            // Nombre de questions jouées dans le round courant
+            int questionsInCurrentRound = play.getPlayedCards().size()
+                    - (play.getCurrentRound() * play.getGame().getNumberQuestionsByRound());
+
+            GetCardDTO cardDTO = play.getCurrentCard() != null
+                    ? new GetCardDTO(
+                    play.getCurrentCard().getId(),
+                    play.getCurrentCard().getQuestion(),
+                    play.getCurrentCard().getPoints(),
+                    play.getCurrentCard().getLevel())
+                    : null;
+
+            GetPlayerDTO currentPlayerDTO = play.getCurrentPlayer() != null
+                    ? toDTOObject(play.getCurrentPlayer())
+                    : null;
+
             playDTO = new GetPlayDTO(
                     play.getId(),
-                    // game DTO
-                    new GetGameDTO(play.getGame().getId(), play.getGame().getName(),
-                            play.getGame().getDescription(), play.getGame().getNumberRound(), null),
-                    // current card DTO
-                    play.getCurrentCard() != null ? new GetCardDTO(play.getCurrentCard().getId(),
-                            play.getCurrentCard().getQuestion(), play.getCurrentCard().getPoints(),
-                            play.getCurrentCard().getLevel()) : null,
+                    new GetGameDTO(
+                            play.getGame().getId(),
+                            play.getGame().getName(),
+                            play.getGame().getDescription(),
+                            play.getGame().getNumberRound(),
+                            null),
+                    cardDTO,
                     play.getCurrentRound(),
-                    play.getStatus()
+                    questionsInCurrentRound,
+                    play.getStatus(),
+                    currentPlayerDTO
             );
         }
-        return new GetLobbyDTO(lobby.getCode(),
-                lobby.getStatus(), lobby.getPlayers().stream().map(this::toDTOObject).toList(), playDTO);
+
+        return new GetLobbyDTO(
+                lobby.getCode(),
+                lobby.getStatus(),
+                lobby.getPlayers().stream().map(this::toDTOObject).toList(),
+                playDTO
+        );
     }
 
     private GetPlayerDTO toDTOObject(Player player) {
-        if (player == null) {
-            return null;
-        }
-        return new GetPlayerDTO(player.getId(), player.getPseudo(), player.getRole());
+        if (player == null) return null;
+        return new GetPlayerDTO(player.getId(), player.getPseudo(), player.getRole(), player.getPoints());
     }
 }

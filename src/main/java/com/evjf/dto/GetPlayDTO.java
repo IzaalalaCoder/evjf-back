@@ -7,5 +7,7 @@ public record GetPlayDTO(
         GetGameDTO game,
         GetCardDTO currentCard,
         Integer currentRound,
-        PlayStatus status
+        Integer currentNumberQuestion,
+        PlayStatus status,
+        GetPlayerDTO currentPlayer
 ) {}

@@ -31,6 +31,8 @@ public class Player {
     @JoinColumn(name = "lobby_code")
     private Lobby lobby;
 
+    private Integer points = 0;
+
     // CONSTRUCTORS
 
     public Player() {}
@@ -71,5 +73,17 @@ public class Player {
 
     public void setLobby(Lobby lobby) {
         this.lobby = lobby;
+    }
+
+    public Integer getPoints() {
+        return points;
+    }
+
+    public void setPoints(Integer points) {
+        this.points = points;
+    }
+
+    public void addPoints(Integer points) {
+        this.points += points;
     }
 }
