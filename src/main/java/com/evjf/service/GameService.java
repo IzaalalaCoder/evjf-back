@@ -29,7 +29,7 @@ public class GameService {
         if (game != null) {
             return new GetGameDTO(id, game.getName(), game.getDescription(), game.getNumberRound(),
                     game.getCards().stream().map((card -> new GetCardDTO(card.getId(), card.getQuestion(),
-                            card.getPoints(), card.getLevel()))).toList());
+                            card.getPoints(), card.getLevelCard()))).toList());
         }
         return null;
     }
@@ -47,7 +47,7 @@ public class GameService {
                                         card.getId(),
                                         card.getQuestion(),
                                         card.getPoints(),
-                                        card.getLevel()))
+                                        card.getLevelCard()))
                                 .toList()))
                 .toList();
     }

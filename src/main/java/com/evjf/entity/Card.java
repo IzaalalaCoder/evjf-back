@@ -25,7 +25,7 @@ public class Card {
     private Integer points;
 
     @Enumerated(EnumType.STRING)
-    private Level level;
+    private Level levelCard;
 
     @ManyToOne
     @JoinColumn(name = "game_id")
@@ -49,8 +49,8 @@ public class Card {
         return points;
     }
 
-    public Level getLevel() {
-        return level;
+    public Level getLevelCard() {
+        return levelCard;
     }
 
     public Game getGame() {
@@ -61,8 +61,8 @@ public class Card {
         this.game = game;
     }
 
-    public void setLevel(Level level) {
-        this.level = level;
+    public void setLevelCard(Level levelCard) {
+        this.levelCard = levelCard;
     }
 
     public void setPoints(Integer points) {

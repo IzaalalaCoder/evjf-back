@@ -246,7 +246,7 @@ public class LobbyService {
                     play.getCurrentCard().getId(),
                     play.getCurrentCard().getQuestion(),
                     play.getCurrentCard().getPoints(),
-                    play.getCurrentCard().getLevel())
+                    play.getCurrentCard().getLevelCard())
                     : null;
 
             GetPlayerDTO currentPlayerDTO = play.getCurrentPlayer() != null

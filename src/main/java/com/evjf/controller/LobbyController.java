@@ -4,7 +4,15 @@ import com.evjf.dto.CreatePlayerDTO;
 import com.evjf.dto.GetLobbyDTO;
 import com.evjf.service.LobbyService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 
 @RestController
 @RequestMapping("/lobby")
@@ -22,6 +30,11 @@ public class LobbyController {
     }
 
     // METHODS
+
+    @PutMapping(path = "{code}/play")
+    public void play(@PathVariable String code, @RequestBody Boolean done) {
+        this.lobbyService.play(code, done);
+    }
 
     @PostMapping
     public ResponseEntity<Void> createLobby() {
