@@ -1,14 +1,20 @@
 package com.evjf.enumerate;
 
 public enum Level {
-    SOFT("Chelou"),
-    NORMAL("Attention ça se corse"),
-    HARD("Oh putain cours");
+    SOFT("Chelou", 10),
+    NORMAL("Attention ça se corse", 20),
+    HARD("Oh putain cours", 30);
 
     private final String name;
+    private final Integer points;
 
-    Level(String name) {
+    Level(String name, Integer points) {
+        this.points = points;
         this.name = name;
+    }
+
+    public Integer getPoints() {
+        return points;
     }
 
     public String getName() {
